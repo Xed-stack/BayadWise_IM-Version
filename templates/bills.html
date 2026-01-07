@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BayadWise - Bills</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bills.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-left">
+        <img src="{{ url_for('static', filename='logowhite.png') }}" alt="Logo" class="logo-img">
+        <span class="brand-name">BayadWise.</span>
+    </div>
+    <div class="nav-middle">
+        <a href="{{ url_for('dashboard') }}" {% if request.endpoint == 'dashboard' %}class="active"{% endif %}>Dashboard</a>
+        <a href="{{ url_for('bills') }}" {% if request.endpoint == 'bills' %}class="active"{% endif %}>Bills</a>
+        <!-- <a href="{{ url_for('ipon') }}" {% if request.endpoint == 'ipon' %}class="active"{% endif %}>Ipon</a> -->
+        <a href="{{ url_for('history') }}" {% if request.endpoint == 'history' %}class="active"{% endif %}>Payment History</a>
+    </div>
+    <div class="nav-right">
+        <img src="{{ url_for('static', filename='profile.png') }}" alt="Profile" class="profile-img" id="profileTrigger" style="cursor: pointer;">
+        <div id="profileModal" class="profile-modal">
+            <div class="profile-list">
+                <div class="profile-item">
+                    <div class="profile-icon-bg">
+                        <img src="{{ url_for('static', filename='profile.png') }}" alt="User">
+                    </div>
+                    <div class="profile-text">
+                        <h3>3B DA TAGA Ipon</h3>
+                    </div>
+                </div>
+                <hr class="profile-divider">
+                <a href="{{ url_for('logout') }}" class="profile-item">
+                    <div class="notif-icon-bg">
+                        <img src="{{ url_for('static', filename='logout.png') }}" alt="Logout">
+                    </div>
+                    <div class="profile-text">
+                        <h3>Log Out</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <section class="summary-box">
+        <h3>Total Bills This Month: ₱<span id="totalBills">{{ total_bills }}</span></h3>
+        <div class="summary-cards">
+            <div class="card"><span>Paid:</span> <strong id="paidTotal">₱{{ total_paid }}</strong></div>
+            <div class="card"><span>Unpaid:</span> <strong id="unpaidTotal">₱{{ total_unpaid }}</strong></div>
+            <div class="card">
+                <span>Split Among:</span>
+                <strong class="split-input-wrapper">
+                    <input type="number" inputmode="numeric" pattern="[0-9]*" class="split-input" id="splitInput" value="{{ split_among }}" min="1">
+                    <i class="fa-solid fa-user-group"></i>
+                </strong>
+            </div>
+            <div class="card highlight">
+                <span>Your Share:</span>
+                <strong id="yourShare">₱{{ your_share }}</strong>
+            </div>
+        </div>
+    </section>
+    <section class="table-box">
+        <table>
+            <thead>
+                <tr>
+                    <th>Bill</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Due</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="billsTable">
+                {% for bill in bills %}
+                <tr data-id="{{ bill.bill_id }}" data-amount="{{ bill.amount }}">
+                    <td>{{ bill.bill_name }}</td>
+                    <td>₱{{ bill.amount|int }}</td>
+                    <td><span class="status {% if bill.status == 'Paid' %}paid{% else %}unpaid{% endif %}">{{ bill.status }}</span></td>
+                    <td>{{ bill.due_date }}</td>
+                    <td>
+                        <button class="btn-action">{% if bill.status == 'Paid' %}Unpaid{% else %}Paid{% endif %}</button>
+                        <button class="btn-edit"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn-delete"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <div class="add-bill-container">
+        <button class="btn-add-bill" id="openModal">Add New Bill</button>
+    </div>
+</div>
+
+<!-- ADD/EDIT BILL MODAL -->
+<div id="billModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <div class="modal-header">
+            <div class="plus-icon">+</div>
+            <h2>Add/Edit Bill</h2>
+        </div>
+        <form id="addBillForm">
+            <input type="hidden" name="bill_id" id="editBillId">
+            <div class="form-group">
+                <label>Bill Name:</label>
+                <input type="text" name="bill_name" placeholder="Enter the Bill Name" required>
+            </div>
+            <div class="form-group">
+                <label>Amount:</label>
+                <input type="number" name="amount" placeholder="Enter the Amount" required>
+            </div>
+            <div class="form-group">
+                <label>Due Date:</label>
+                <input type="date" name="due_date" required>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn-save">Save</button>
+                <button type="button" class="btn-cancel" id="closeModal">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+/* ----- PROFILE MODAL ----- (BERBON)*/
+const profileTrigger = document.getElementById("profileTrigger");
+const profileModal = document.getElementById("profileModal");
+
+profileTrigger.onclick = (e) => {
+    e.stopPropagation();
+    profileModal.style.display = profileModal.style.display === "block" ? "none" : "block";
+};
+
+window.onclick = (event) => {
+    if (!profileModal.contains(event.target) && event.target !== profileTrigger)
+        profileModal.style.display = "none";
+};
+</script>
+
+<script>
+/* ----- ADD BILL MODAL OPEN/CLOSE ----- (GREGORIO) */
+const modal = document.getElementById("billModal");
+const btn = document.getElementById("openModal");
+const cancelBtn = document.getElementById("closeModal");
+
+btn.onclick = () => {
+    modal.classList.remove("fade-out");
+    modal.style.display = "block";
+};
+
+const closeModal = () => {
+    modal.classList.add("fade-out");
+    setTimeout(() => {
+        modal.style.display = "none";
+    }, 400);
+};
+
+cancelBtn.onclick = closeModal;
+
+window.onclick = (event) => {
+    if (event.target == modal) closeModal();
+};
+</script>
+
+<script>
+/* ----- SPLIT INPUT UPDATE ----- (GREGORIO) */
+document.getElementById("splitInput").addEventListener("input", () => {
+    const splitVal = parseInt(document.getElementById("splitInput").value) || 1;
+    fetch("/update_split", {
+        method: "POST",
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: `split=${splitVal}`
+    })
+    .then(r => r.json())
+    .then(data => {
+        const total = parseInt(document.getElementById("totalBills").textContent) || 0;
+        document.getElementById("yourShare").textContent =
+            `₱${Math.floor(total / data.split_among)}`;
+    });
+});
+
+/* ----- UPDATE SUMMARY ----- */
+function updateSummary(data){
+    const splitVal = parseInt(document.getElementById("splitInput").value) || 1;
+    document.getElementById("totalBills").textContent = Math.floor(data.total_bills);
+    document.getElementById("paidTotal").textContent = `₱${Math.floor(data.total_paid)}`;
+    document.getElementById("unpaidTotal").textContent = `₱${Math.floor(data.total_unpaid)}`;
+    document.getElementById("yourShare").textContent =
+        `₱${Math.floor(data.total_bills / splitVal)}`;
+}
+</script>
+
+<script>
+/* ----- ADD/EDIT BILL FORM ----- (BERBON)*/
+document.getElementById("addBillForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+    const billId = formData.get('bill_id');
+    const billName = formData.get('bill_name');
+    const amount = parseFloat(formData.get('amount'));
+    const dueDate = formData.get('due_date');
+
+    const action = billId ? 'edit' : 'add';
+    const body =
+        `action=${action}&bill_id=${billId || ''}&bill_name=${billName}&amount=${amount}&due_date=${dueDate}`;
+
+    fetch("/bill_action", {
+        method: "POST",
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: body
+    })
+    .then(r => r.json())
+    .then(data => {
+        if(data.success){
+            const tbody = document.getElementById("billsTable");
+            if(action === 'add'){
+                const newRow = document.createElement("tr");
+                newRow.dataset.id = data.bill.bill_id;
+                newRow.dataset.amount = data.bill.amount;
+                newRow.innerHTML = `
+                    <td>${data.bill.bill_name}</td>
+                    <td>₱${data.bill.amount.toFixed(2)}</td>
+                    <td><span class="status unpaid">Unpaid</span></td>
+                    <td>${data.bill.due_date}</td>
+                    <td>
+                        <button class="btn-action">Paid</button>
+                        <button class="btn-edit"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn-delete"><i class="fa-solid fa-trash"></i></button>
+                    </td>`;
+                tbody.appendChild(newRow);
+            } else {
+                const row = document.querySelector(`tr[data-id='${billId}']`);
+                row.children[0].textContent = billName;
+                row.children[1].textContent = `₱${amount.toFixed(2)}`;
+                row.children[3].textContent = dueDate;
+                row.dataset.amount = amount;
+            }
+            updateSummary(data);
+            form.reset();
+            document.getElementById("editBillId").value = '';
+            closeModal();
+        }
+    });
+});
+</script>
+
+<script>
+/* ----- TABLE ACTIONS (TOGGLE / DELETE / EDIT) ----- (DE GUZMAN) */
+const billsTable = document.getElementById("billsTable");
+
+billsTable.addEventListener("click", e => {
+    const row = e.target.closest("tr");
+    if(!row) return;
+    const billId = row.dataset.id;
+
+    // Toggle Paid/Unpaid
+    const actionBtn = e.target.closest(".btn-action");
+    if(actionBtn){
+        const statusSpan = row.querySelector(".status");
+        const newStatus =
+            statusSpan.textContent.trim() === "Paid" ? "Unpaid" : "Paid";
+        fetch("/bill_action", {
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: `action=toggle&bill_id=${billId}&status=${newStatus}`
+        })
+        .then(r => r.json())
+        .then(data => {
+            if(data.success){
+                statusSpan.textContent = newStatus;
+                statusSpan.className = `status ${newStatus.toLowerCase()}`;
+                actionBtn.textContent =
+                    newStatus === "Paid" ? "Unpaid" : "Paid";
+                updateSummary(data);
+            }
+        });
+    }
+
+    // Delete
+    const deleteBtn = e.target.closest(".btn-delete");
+    if(deleteBtn){
+        if(!confirm("Delete this bill?")) return;
+        fetch("/bill_action", {
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: `action=delete&bill_id=${billId}`
+        })
+        .then(r => r.json())
+        .then(data => {
+            if(data.success){
+                row.remove();
+                updateSummary(data);
+            }
+        });
+        return;
+    }
+
+    // Edit
+    const editBtn = e.target.closest(".btn-edit");
+    if(editBtn){
+        document.querySelector("#addBillForm input[name='bill_name']").value =
+            row.children[0].textContent;
+        document.querySelector("#addBillForm input[name='amount']").value =
+            parseFloat(row.dataset.amount);
+        document.querySelector("#addBillForm input[name='due_date']").value =
+            row.children[3].textContent;
+        document.getElementById("editBillId").value = billId;
+        modal.classList.remove("fade-out");
+        modal.style.display = "block";
+    }
+});
+</script>
+
+</body>
+</html>

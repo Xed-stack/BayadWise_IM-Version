@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BayadWise - Log In</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="container">
+        <div class="login-section">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="BayadWise Logo"> 
+                <h1>BayadWise.</h1>
+            </div>
+
+            <div class="form-content">
+                <h2>Welcome Back</h2>
+                <p>Log in to your Account</p>
+
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            <div class="flash-messages">
+                                {% for category, message in messages %}
+                                    <div class="flash {{ category }}">{{ message }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+
+                <form action="{{ url_for('login') }}" method="POST">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="Enter your username">
+
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password"> <br>
+
+                    <button class="btn-login">Log In</a>
+                </form>            
+            </div>
+
+                <p class="signup-text">
+                Don’t have any Account? <a href="{{ url_for('register') }}">Sign up now</a>
+                </p>
+
+            <div class="footer-note">
+                <p>© 3B DA 2025. all rights reserved</p>
+            </div>
+        </div>
+
+        <div class="graphic-section">
+            <div class="graphic-container">
+                <img src="{{ url_for('static', filename='Wireframe.png') }}" alt="BayadWise Illustration" alt="BayadWise Illustration" class="illustration">
+            </div>
+            
+        </div>
+    </div>
+
+</body>
+</html>

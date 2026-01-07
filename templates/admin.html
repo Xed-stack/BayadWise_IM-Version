@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BayadWise - Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <img src="{{ url_for('static', filename='logowhite.png') }}" alt="Logo" class="logo-img">
+            <span class="brand-name">BayadWise.</span>
+        </div>
+        <div class="nav-middle">
+            <h2 style="margin:0; font-size: 2rem;">Admin Dashboard</h2>
+        </div>
+        <div class="nav-right">
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    placeholder="Search user, username, or ID..." 
+                    class="admin-search"
+                    id="adminSearch"
+                >
+            </div>
+
+            <img src="{{ url_for('static', filename='profile.png') }}" alt="Profile" class="profile-img" id="profileTrigger" style="cursor: pointer;">
+
+            <div id="profileModal" class="profile-modal">
+                <div class="profile-list">
+                    <div class="profile-item">
+                        <div class="profile-icon-bg">
+                            <img src="{{ url_for('static', filename='profile.png') }}" alt="User">
+                        </div>
+                        <div class="profile-text">
+                            <h3>3B DA TAGA Ipon</h3>
+                        </div>
+                    </div>                        
+                    <hr class="profile-divider">
+                    <a href="{{ url_for('logout') }}" class="profile-item">
+                        <div class="notif-icon-bg">
+                            <img src="{{ url_for('static', filename='logout.png') }}" alt="Logout">
+                        </div>
+                        <div class="profile-text">
+                            <h3>Log Out</h3>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h3 style="font-size: 1.6rem; margin-bottom: 20px;">List of users:</h3>
+        
+        
+
+        <section class="table-box">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Account ID</th>
+                        <th>Full Name</th>
+                        <th>Username</th>
+                        <th>Password</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr {% if user.role == 'admin' %} style="background-color: #f9d6d5;" {% endif %}>
+                        <td>{{ user.user_id }}</td>
+                        <td>{{ user.full_name }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.password }}</td>
+                        <td> 
+                            {% if user.role != 'admin' %}
+                            <a class="delete-btn" href="{{url_for('delete_user', user_id=user.user_id)}}" onclick="return confirm('Are you sure you want to Delete this user?')">Delete</a>
+                            {% else %}
+                                <span style="color:#eb0aaf; font-weight: bolder;">Protected</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+<script>
+    const profileTrigger = document.getElementById("profileTrigger");
+    const profileModal = document.getElementById("profileModal");
+
+    profileTrigger.onclick = (e) => {
+        e.stopPropagation();
+        profileModal.style.display = (profileModal.style.display === "block") ? "none" : "block";
+    };
+
+    window.onclick = (event) => {
+        if (!profileModal.contains(event.target) && event.target !== profileTrigger) {
+            profileModal.style.display = "none";
+        }
+    };
+</script>
+
+<script>
+    const searchInput = document.getElementById("adminSearch");
+
+    searchInput.addEventListener("keyup", function () {
+        const filter = searchInput.value.toLowerCase();
+        const rows = document.querySelectorAll("tbody tr");
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? "" : "none";
+        });
+    });
+</script>
+</body>
+</html>

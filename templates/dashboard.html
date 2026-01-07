@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BayadWise - Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="main-header-wrapper">
+        <nav class="navbar">
+            <div class="nav-left">
+                <img src="{{ url_for('static', filename='logowhite.png') }}" alt="Logo" class="logo-img">
+                <span class="brand-name">BayadWise.</span>
+            </div>
+            <div class="nav-middle">
+                <a href="{{ url_for('dashboard') }}" {% if request.endpoint == 'dashboard' %}class="active"{% endif %}>Dashboard</a>
+                <a href="{{ url_for('bills') }}" {% if request.endpoint == 'bills' %}class="active"{% endif %}>Bills</a>
+                <!-- <a href="{{ url_for('ipon') }}" {% if request.endpoint == 'ipon' %}class="active"{% endif %}>Ipon</a> -->
+                <a href="{{ url_for('history') }}" {% if request.endpoint == 'history' %}class="active"{% endif %}>Payment History</a>
+            </div>
+            <div class="nav-right">
+                <img src="{{ url_for('static', filename='notif.png') }}" alt="Notifications" class="icon-circle" id="notifTrigger" style="cursor: pointer;">
+                <div id="notifModal" class="notif-modal">
+                    <h2 class="notif-title">Notifications</h2>
+                    <div class="notif-list">
+                        <div class="notif-item">
+                            <div class="notif-icon-bg" width="24">📜</div>
+                            <div class="notif-text">
+                                <h3>Bill Reminders</h3>
+                                <p>{{ bill_reminder_text }}</p>
+                            </div>
+                        </div>
+                        <hr class="notif-divider">
+                        <!-- <div class="notif-item">
+                            <div class="notif-icon-bg">🐷</div>
+                            <div class="notif-text">
+                                <h3>Ipon Progress</h3>
+                                <p>{{ ipon_text }}</p>
+                            </div>
+                        </div>
+                        <hr class="notif-divider">
+                        <div class="notif-item">
+                            <div class="notif-icon-bg"><img src="{{ url_for('static', filename='forecast.png') }}"></div>
+                            <div class="notif-text">
+                                <h3>Bill Forecast & Insights</h3>
+                                <p>{{ forecast_text }}</p>
+                            </div>
+                        </div> -->
+                    </div>
+                </div>
+                <img src="{{ url_for('static', filename='profile.png') }}" alt="Profile" class="profile-img" id="profileTrigger" style="cursor: pointer;">
+                <div id="profileModal" class="profile-modal">
+                    <div class="profile-list">
+                        <div class="profile-item">
+                            <div class="profile-icon-bg">
+                                <img src="{{ url_for('static', filename='profile.png') }}" alt="User">
+                            </div>
+                            <div class="profile-text">
+                                <h3>3B DA TAGA Ipon</h3>
+                            </div>
+                        </div>                        
+                        <hr class="profile-divider">
+                        <a href="{{ url_for('logout') }}" class="profile-item">
+                            <div class="notif-icon-bg">
+                                <img src="{{ url_for('static', filename='logout.png') }}" alt="Logout">
+                            </div>
+                            <div class="profile-text">
+                                <h3>Log Out</h3>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <section class="dashboard-banner">
+            <h2>Hello, {{ username }}!</h2>
+            <div class="summary-cards">
+                <div class="card dark-card">
+                    <div class="card-info">
+                        <span>Total Bills This Month</span>
+                        <strong>₱{{ total_bills }}</strong>
+                    </div>
+                    <div class="card-icon">📜</div>
+                </div>
+                <div class="card dark-card">
+                    <div class="card-info">
+                        <span>Your Share</span>
+                        <strong>₱{{ your_share }}</strong>
+                    </div>
+                    <div class="card-icon">💸</div>
+                </div>
+                <!-- <div class="card dark-card">
+                    <div class="card-info">
+                        <span>Ipon Progress</span>
+                        <strong>₱{{ ipon_progress }}</strong>
+                    </div>
+                    <div class="card-icon">🐷</div>
+                </div> -->
+            </div>
+        </section>
+    </div>
+
+    <div class="container">
+        <div class="dashboard-grid">
+            
+            <section class="action-box">
+                <h3>My Bills</h3>
+                    <div class="table-box scrollable">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Bill</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentsTable">
+                                {% for bill in bills %}
+                                <tr data-id="{{ bill.bill_id }}">
+                                    <td>{{ bill.bill_name }}</td>
+                                    <td class="amount-strong">₱{{ bill.amount|int }}</td>
+                                    <td>
+                                        <span class="status {% if bill.status=='Paid' %}paid{% else %}unpaid{% endif %}">
+                                            {{ bill.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+            </section>
+
+            <!-- <section class="action-box">
+                <h3>Bill Forecast & Insights</h3>
+                <div class="list-container">
+                    <div class="list-item"><span>Top Expense:</span> <strong>₱{{ top_expense }}</strong></div>
+                    <div class="list-item"><span>Last Month:</span> <strong>₱{{ last_month_total }}</strong></div>
+                    <div class="list-item"><span>This Month (Forecast):</span> <strong>₱{{ forecast_this_month }}</strong></div>
+                    <div class="list-item"><span>Difference:</span> <strong>₱{{ difference }}</strong></div>
+                </div>
+            </section> -->
+
+        </div>
+    </div>
+
+    <script>
+        const notifTrigger = document.getElementById("notifTrigger");
+        const notifModal = document.getElementById("notifModal");
+        const profileTrigger = document.getElementById("profileTrigger");
+        const profileModal = document.getElementById("profileModal");
+
+        notifTrigger.onclick = (e) => {
+            e.stopPropagation();
+            profileModal.style.display = "none";
+            notifModal.style.display = (notifModal.style.display === "block") ? "none" : "block";
+        };
+
+        profileTrigger.onclick = (e) => {
+            e.stopPropagation();
+            notifModal.style.display = "none";
+            profileModal.style.display = (profileModal.style.display === "block") ? "none" : "block";
+        };
+
+        window.onclick = (event) => {
+            if (!profileModal.contains(event.target) && event.target !== profileTrigger) {
+                profileModal.style.display = "none";
+            }
+            if (!notifModal.contains(event.target) && event.target !== notifTrigger) {
+                notifModal.style.display = "none";
+            }
+        };
+    </script>
+
+    <script>
+        const paymentsTable = document.getElementById("paymentsTable");
+
+    paymentsTable.addEventListener("click", e => {
+        const row = e.target.closest("tr");
+        if(!row) return;
+        const billId = row.dataset.id;
+
+        const statusSpan = e.target.closest(".status");
+        if(!statusSpan) return;
+
+        const newStatus = statusSpan.textContent.trim() === "Paid" ? "Unpaid" : "Paid";
+
+        fetch("/bill_action", {
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: `action=toggle&bill_id=${billId}&status=${newStatus}`
+        })
+        .then(r => r.json())
+        .then(data => {
+            if(data.success){
+                statusSpan.textContent = newStatus;
+                statusSpan.className = `status ${newStatus.toLowerCase()}`;
+            }
+        });
+    });
+    </script>
+</body>
+</html>

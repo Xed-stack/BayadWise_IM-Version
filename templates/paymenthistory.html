@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BayadWise - Ipon</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='paymenthistory.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <img src="{{ url_for('static', filename='logowhite.png') }}" alt="Logo" class="logo-img">
+            <span class="brand-name">BayadWise.</span>
+        </div>
+        <div class="nav-middle">
+            <a href="{{ url_for('dashboard') }}" {% if request.endpoint == 'dashboard' %}class="active"{% endif %}>Dashboard</a>
+            <a href="{{ url_for('bills') }}" {% if request.endpoint == 'bills' %}class="active"{% endif %}>Bills</a>
+            <!-- <a href="{{ url_for('ipon') }}" {% if request.endpoint == 'ipon' %}class="active"{% endif %}>Ipon</a> -->
+            <a href="{{ url_for('history') }}" {% if request.endpoint == 'history' %}class="active"{% endif %}>Payment History</a>
+        </div>
+            <div class="nav-right">
+                <img src="{{ url_for('static', filename='profile.png') }}" alt="Profile" class="profile-img" id="profileTrigger" style="cursor: pointer;">
+                <div id="profileModal" class="profile-modal">
+                    <div class="profile-list">
+                        <div class="profile-item">
+                            <div class="profile-icon-bg">
+                                <img src="{{ url_for('static', filename='profile.png') }}" alt="User">
+                            </div>
+                            <div class="profile-text">
+                                <h3>3B DA TAGA Ipon</h3>
+                            </div>
+                        </div>                        
+                        <hr class="profile-divider">
+                        <a href="{{ url_for('logout') }}" class="profile-item">
+                            <div class="notif-icon-bg">
+                                <img src="{{ url_for('static', filename='logout.png') }}" alt="Logout">
+                            </div>
+                            <div class="profile-text">
+                                <h3>Log Out</h3>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+    </nav>
+    <div class="container">
+        <section class="summary-box">
+            <h3>My Payment History</h3>
+            <div class="summary-cards">
+                <div class="card"><span>Total Amount Paid This Month: </span> <strong>₱{{ total_paid_amount }}</strong></div>
+                <div class="card"><span>Total Paid Bills This Month: </span> <strong>{{ total_paid_bills }}</strong></div>
+                <div class="card"><span>Last Payment: </span> <strong>{{ last_payment_text }}</strong></div>
+            </div>
+        </section>
+
+        <section class="table-box">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bill</th>
+                        <th>Amount</th>
+                        <th>Paid Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bill in paid_bills %}
+                    <tr>
+                        <td>{{ bill.bill_name }}</td>
+                        <td class="amount-strong">₱{{ bill.amount|int }}</td>
+                        <td>{{ bill.due_date }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        </div>
+
+<script>
+    const profileTrigger = document.getElementById("profileTrigger");
+    const profileModal = document.getElementById("profileModal");
+
+    profileTrigger.onclick = (e) => {
+        e.stopPropagation();
+        profileModal.style.display =
+            (profileModal.style.display === "block") ? "none" : "block";
+    };
+
+    window.onclick = (event) => {
+        if (!profileModal.contains(event.target) && event.target !== profileTrigger) {
+            profileModal.style.display = "none";
+        }
+    };
+</script>
+
+</body>
+</html>
